@@ -1,10 +1,16 @@
 const express = require("express");
 const db = require("./db/connection.js");
 const Fruit = require("./models/fruit.js");
+const methodOverride = require("method-override");
+const morgan = require("morgan");
+const path = require("path");
 
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
+app.use(methodOverride("_method"));
+app.use(morgan("dev"));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
   res.render("index.ejs");
@@ -33,8 +39,31 @@ app.post("/fruits", async (req, res) => {
     req.body.isReadyToEat = false;
   }
 
-  await Fruit.create(req.body)
+  await Fruit.create(req.body);
   res.redirect("/fruits");
+});
+
+app.delete("/fruits/:fruitId", async (req, res) => {
+  await Fruit.findByIdAndDelete(req.params.fruitId);
+  res.redirect("/fruits");
+});
+
+app.get("/fruits/:fruitId/edit", async (req, res) => {
+  const foundFruit = await Fruit.findById(req.params.fruitId);
+  res.render("fruits/edit.ejs", {
+    fruit: foundFruit,
+  });
+});
+
+app.put("/fruits/:fruitId", async (req, res) => {
+  if (req.body.isReadyToEat === "on") {
+    req.body.isReadyToEat = true;
+  } else {
+    req.body.isReadyToEat = false;
+  }
+
+  await Fruit.findByIdAndUpdate(req.params.fruitId, req.body);
+  res.redirect(`/fruits/${req.params.fruitId}`);
 });
 
 db.on("connected", () => {
