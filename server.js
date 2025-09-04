@@ -12,7 +12,9 @@ app.get("/", (req, res) => {
 
 app.get("/fruits", async (req, res) => {
   const fruitsData = await Fruit.find();
-  res.render("fruits/index.ejs", { fruits: fruitsData });
+  res.render("fruits/index.ejs", {
+    fruits: fruitsData,
+  });
 });
 
 app.get("/fruits/new", (req, res) => {
@@ -31,7 +33,7 @@ app.post("/fruits", async (req, res) => {
     req.body.isReadyToEat = false;
   }
 
-  await Fruit.create(req.body);
+  await Fruit.create(req.body)
   res.redirect("/fruits");
 });
 
